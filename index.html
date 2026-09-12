@@ -14,7 +14,7 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f0f2f5; /* 全体の背景はシンプルな薄灰色に戻しました */
+            background-color: #f0f2f5;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,13 +27,14 @@
             font-size: 20px;
             color: #333;
             margin-bottom: 16px;
+            letter-spacing: 1px;
         }
         /* ビンゴグリッド（カード本体） */
         .bingo-card {
             width: 100%;
             max-width: 300px;
             
-            /* ▼ カード本体の背景に bg.jpg を指定しました */
+            /* カード本体の背景画像 */
             background-image: url('bg.jpg');
             background-size: cover;
             background-position: center;
@@ -54,10 +55,8 @@
             height: 100%;
         }
         .cell {
-            /* ▼ 背景画像が透けて見えるよう、マスの背景を少し透明（85%）にしています */
             background-color: rgba(255, 255, 255, 0.85);
             border: 2px solid rgba(225, 232, 237, 0.5);
-            
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -69,7 +68,7 @@
             transition: background-color 0.2s, transform 0.1s;
             aspect-ratio: 1 / 1;
         }
-        /* タップされて穴が空いたスタイル（ここはしっかり赤で塗りつぶします） */
+        /* タップされて穴が空いたスタイル */
         .cell.selected {
             background-color: #ff4757 !important;
             border-color: #ff4757 !important;
@@ -96,7 +95,7 @@
         .cell.reach {
             animation: rainbow-flash 1s infinite linear;
             border-width: 3px;
-            background-color: rgba(255, 255, 255, 0.95); /* リーチマスは見やすく少し濃い白に */
+            background-color: rgba(255, 255, 255, 0.95);
         }
 
         /* ビンゴ達成時のゴールドシャイン演出 */
@@ -178,7 +177,7 @@
 </head>
 <body>
 
-    <h1>BINGO</h1>
+    <h1>BINGO CARD</h1>
 
     <div class="bingo-card">
         <div class="grid" id="bingoGrid"></div>
@@ -196,7 +195,6 @@
         let previousReachCount = 0;
         let previousBingoCount = 0;
 
-        // リーチ音（ピコーン！）
         function playReachSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -220,7 +218,6 @@
             }
         }
 
-        // ビンゴファンファーレ音
         function playBingoSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
