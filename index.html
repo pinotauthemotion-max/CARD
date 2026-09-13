@@ -24,7 +24,7 @@
             overflow: hidden;
         }
         h1 {
-            font-size: 20px;
+            font-size: 32px;
             color: #333;
             margin-bottom: 16px;
             letter-spacing: 1px;
@@ -65,7 +65,6 @@
             transition: background-color 0.2s, transform 0.1s;
             aspect-ratio: 1 / 1;
         }
-        /* タップされて穴が空いたスタイル */
         .cell.selected {
             background-color: #ff4757 !important;
             border-color: #ff4757 !important;
@@ -95,7 +94,7 @@
             background-color: rgba(255, 255, 255, 0.95);
         }
 
-        /* ビンゴ達成時のゴールドシャイン演出 */
+        /* ビンゴ達成時の演出 */
         @keyframes gold-shine {
             0% { transform: scale(0.95); box-shadow: 0 0 5px #ffd700; }
             50% { transform: scale(1.05); box-shadow: 0 0 20px #ffd700; }
@@ -109,13 +108,14 @@
             z-index: 10;
         }
 
-        /* ボタングループ */
-        .btn-group {
+        /* コントロールボタン群 */
+        .controls {
             display: flex;
             gap: 10px;
             margin-top: 20px;
             width: 100%;
             max-width: 300px;
+            justify-content: center;
         }
         .btn {
             flex: 1;
@@ -129,7 +129,7 @@
             transition: all 0.2s;
             text-align: center;
         }
-        /* カードを選択ボタン（緑） */
+        /* カードを選択ボタン */
         .btn-select {
             background-color: #2ed573;
             box-shadow: 0 4px 6px rgba(46, 213, 115, 0.2);
@@ -137,17 +137,17 @@
         .btn-select:active {
             background-color: #26af5f;
         }
-        /* カードを決定ボタン（青） */
-        .btn-confirm {
-            background-color: #1e90ff;
-            box-shadow: 0 4px 6px rgba(30, 144, 255, 0.2);
+        /* カードを決定ボタン */
+        .btn-lock {
+            background-color: #3742fa;
+            box-shadow: 0 4px 6px rgba(55, 66, 250, 0.2);
         }
-        .btn-confirm:active {
-            background-color: #0972d3;
+        .btn-lock:active {
+            background-color: #2f3542;
         }
-        /* 無効化されたボタンのスタイル */
+        /* 無効化（決定後） */
         .btn:disabled {
-            background-color: #b2bec3 !important;
+            background-color: #a4b0be !important;
             box-shadow: none !important;
             cursor: not-allowed;
             opacity: 0.6;
@@ -206,10 +206,9 @@
         <div class="grid" id="bingoGrid"></div>
     </div>
 
-    <!-- 横並びのボタン2つ -->
-    <div class="btn-group">
+    <div class="controls">
         <button id="btnSelect" class="btn btn-select" onclick="initBingo()">カードを選択</button>
-        <button id="btnConfirm" class="btn btn-confirm" onclick="confirmCard()">カードを決定</button>
+        <button id="btnLock" class="btn btn-lock" onclick="lockCard()">カードを決定</button>
     </div>
 
     <!-- ビンゴお祝いポップアップ -->
@@ -219,22 +218,35 @@
     </div>
 
     <script>
+        let isCardLocked = false;
         let previousReachCount = 0;
         let previousBingoCount = 0;
 
-        // カードを決定する関数
-        function confirmCard() {
-            const btnSelect = document.getElementById('btnSelect');
-            const btnConfirm = document.getElementById('btnConfirm');
+        // 決定時の効果音（カキーン！／ポーン！）
+        function playConfirmSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioCtx = new AudioContext();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-            // 「カードを選択」ボタンを無効化
-            btnSelect.disabled = true;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); // ラ (A4)
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.08); // ラ (A5)
 
-            // 「カードを決定」ボタンも決定済み状態にする
-            btnConfirm.disabled = true;
-            btnConfirm.innerText = '決定済み';
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+                console.log("AudioContext blocked or not supported");
+            }
         }
 
+        // リーチ音（ピコーン！）
         function playReachSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -258,6 +270,7 @@
             }
         }
 
+        // ビンゴファンファーレ音
         function playBingoSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -296,6 +309,22 @@
 
         function closeBingoOverlay() {
             document.getElementById('bingoOverlay').classList.remove('show');
+        }
+
+        // カードを決定する処理
+        function lockCard() {
+            if (isCardLocked) return;
+            isCardLocked = true;
+
+            playConfirmSound();
+
+            // 「カードを選択」ボタンを無効化（タップ不可・グレー表示）
+            document.getElementById('btnSelect').disabled = true;
+
+            // 「カードを決定」ボタンを決定済み表示にして無効化
+            const lockBtn = document.getElementById('btnLock');
+            lockBtn.innerText = '決定済み';
+            lockBtn.disabled = true;
         }
 
         function checkBingoState() {
@@ -350,6 +379,8 @@
         }
 
         function initBingo() {
+            if (isCardLocked) return;
+
             const grid = document.getElementById('bingoGrid');
             grid.innerHTML = ''; 
             previousReachCount = 0;
@@ -382,6 +413,11 @@
                     } else {
                         cell.innerText = columns[col][row];
                         cell.addEventListener('click', () => {
+                            // 決定前はマスを開けられない仕様
+                            if (!isCardLocked) {
+                                alert('「カードを決定」をタップしてからゲームを開始してください。');
+                                return;
+                            }
                             cell.classList.toggle('selected');
                             checkBingoState();
                         });
@@ -389,7 +425,6 @@
                     grid.appendChild(cell);
                 }
             }
-            checkBingoState();
         }
 
         window.onload = initBingo;
