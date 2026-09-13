@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="robots" content="noindex, nofollow">
     <title>デジタルビンゴカード</title>
     <style>
         * {
@@ -34,13 +33,10 @@
         .bingo-card {
             width: 100%;
             max-width: 300px;
-            
-            /* カード本体の背景画像 */
             background-image: url('bg.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             padding: 12px;
@@ -113,22 +109,48 @@
             z-index: 10;
         }
 
-        .btn-reset {
+        /* ボタングループ */
+        .btn-group {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
-            padding: 10px 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 0;
             font-size: 14px;
             font-weight: bold;
             color: #fff;
-            background-color: #2ed573;
             border: none;
             border-radius: 20px;
-            box-shadow: 0 4px 6px rgba(46, 213, 115, 0.2);
             cursor: pointer;
-            transition: background 0.2s;
-            z-index: 5;
+            transition: all 0.2s;
+            text-align: center;
         }
-        .btn-reset:active {
+        /* カードを選択ボタン（緑） */
+        .btn-select {
+            background-color: #2ed573;
+            box-shadow: 0 4px 6px rgba(46, 213, 115, 0.2);
+        }
+        .btn-select:active {
             background-color: #26af5f;
+        }
+        /* カードを決定ボタン（青） */
+        .btn-confirm {
+            background-color: #1e90ff;
+            box-shadow: 0 4px 6px rgba(30, 144, 255, 0.2);
+        }
+        .btn-confirm:active {
+            background-color: #0972d3;
+        }
+        /* 無効化されたボタンのスタイル */
+        .btn:disabled {
+            background-color: #b2bec3 !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
         /* ビンゴ画面オーバーレイ */
@@ -184,7 +206,11 @@
         <div class="grid" id="bingoGrid"></div>
     </div>
 
-    <button class="btn-reset" onclick="initBingo()">カードを新しくする</button>
+    <!-- 横並びのボタン2つ -->
+    <div class="btn-group">
+        <button id="btnSelect" class="btn btn-select" onclick="initBingo()">カードを選択</button>
+        <button id="btnConfirm" class="btn btn-confirm" onclick="confirmCard()">カードを決定</button>
+    </div>
 
     <!-- ビンゴお祝いポップアップ -->
     <div class="bingo-overlay" id="bingoOverlay" onclick="closeBingoOverlay()">
@@ -195,6 +221,19 @@
     <script>
         let previousReachCount = 0;
         let previousBingoCount = 0;
+
+        // カードを決定する関数
+        function confirmCard() {
+            const btnSelect = document.getElementById('btnSelect');
+            const btnConfirm = document.getElementById('btnConfirm');
+
+            // 「カードを選択」ボタンを無効化
+            btnSelect.disabled = true;
+
+            // 「カードを決定」ボタンも決定済み状態にする
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = '決定済み';
+        }
 
         function playReachSound() {
             try {
